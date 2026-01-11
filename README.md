@@ -101,7 +101,7 @@ VoidClock runs entirely client-side.
 The core clock logic is open-source.  
 The surrounding UI and presentation are intentionally lightweight.
 
-You can inspect everything directly via your browser.
+You can inspect everything directly via your browser (or this repo).
 
 ---
 
