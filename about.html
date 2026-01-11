@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About the Clock</title>
+
+<style>
+  :root {
+    --bg: #0f1216;
+    --fg: #f2f4f8;
+    --muted: #a9b0c2;
+    --accent: #6ea8fe;
+  }
+
+  * {
+    box-sizing: border-box;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 48px 24px;
+  }
+
+  h1 {
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+    margin-top: 2.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--accent);
+  }
+
+  p {
+    color: var(--muted);
+    margin: 0.5rem 0;
+  }
+
+  ul {
+    margin: 0.5rem 0 0 1.2rem;
+    padding: 0;
+    padding-left: 0;
+    margin-left: 0;
+    color: var(--muted);
+    list-style: none;
+  }
+
+  li {
+    margin: 0.35rem 0;
+    padding-left: 0;
+  }
+
+  .note {
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .accent {
+    color: var(--fg);
+    font-weight: bold;
+  }
+
+  a.variant {
+  color: var(--fg);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(110,168,254,0.35);
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+a.variant:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="wrap">
+
+  <h1>About this Clock</h1>
+
+  <p>
+    This project started as a very simple idea:
+    <span class="accent">a shower clock that doesn’t turn the screen off.</span>
+  </p>
+
+  <p>
+    Over time, it turned into something a bit more intentional — a
+    <span class="accent">local, offline-first time and context display</span>
+    that runs entirely in the browser.
+  </p>
+
+  <h2>Design philosophy</h2>
+
+  <p>
+    There is no backend, no server, and no network dependency.
+    Everything runs locally using HTML, CSS, JavaScript, and the system clock.
+  </p>
+
+  <p>
+    The goal is to provide useful information at a glance without noise,
+    accounts, updates, or external services.
+  </p>
+
+  <h2>Variants</h2>
+
+  <p>
+    Different versions exist because different contexts need different levels
+    of information:
+  </p>
+
+  <ul><ul>
+  <li> <a class="variant" href="classic"> <span class="accent">Classic</span> </a> — just a clock, timezone selector, 12/24h mode, and light/dark theme. </li>
+  <li> <a class="variant" href="pro"> <span class="accent">Pro</span></a> — Classic plus a keep-awake function for tablets and kiosks.</li>
+  <li> <a class="variant" href="ultimate"> <span class="accent">Ultimate</span> </a> — early experimental version with year progress and city display. </li>
+  <li> <a class="variant" href="ultimateproplus"> <span class="accent">UltimateProPlus</span> </a> — weekday-based display with day and year progress bars. </li>
+  <li> <a class="variant" href="year"> <span class="accent">Year</span> </a> — a focused countdown to the next year (days, hours, minutes, seconds).</li>
+</ul>
+
+  </ul>
+
+  <h2>Why progress bars?</h2>
+
+  <p>
+    The day and year indicators are not meant as deadlines.
+    They exist purely as context — a quiet sense of where you are in time.
+  </p>
+
+  <p>
+    If they ever stop being useful, they can be removed just as easily as they were added.
+  </p>
+
+  <h2>Where this runs</h2>
+
+  <p>
+    This can be opened directly from a local file system and works fully offline.
+    It is suitable for desktops, tablets, wall displays, and devices like
+    Raspberry Pi in kiosk mode.
+  </p>
+
+  <h2>Download</h2>
+  <p>
+    All clock variants can be downloaded 
+    <a class="variant" href="https://cdn.voidcore.dev/voidclock.zip" download="https://cdn.voidcore.dev/voidclock.zip">here</a> 
+    as a static bundle for offline use.
+  </p>
+
+
+  <div class="note">
+    Built to be simple, durable, and boring — in the best possible way.
+  </div>
+
+</div>
+
+</body>
+</html>

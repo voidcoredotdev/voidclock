@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Year Countdown</title>
+  <link rel="stylesheet" href="./css/year.css">
+</head>
+<body>
+  <main class="card">
+    <div class="top">
+      <h1 id="title">Countdown to</h1>
+      <div class="meta" id="tz"></div>
+    </div>
+
+    <section class="countdown" aria-label="Time left in the year">
+      <div class="tile">
+        <div class="num" id="days">0</div>
+        <div class="label">days</div>
+      </div>
+      <div class="tile">
+        <div class="num" id="hours">00</div>
+        <div class="label">hours</div>
+      </div>
+      <div class="tile">
+        <div class="num" id="minutes">00</div>
+        <div class="label">minutes</div>
+      </div>
+      <div class="tile">
+        <div class="num" id="seconds">00</div>
+        <div class="label">seconds</div>
+      </div>
+    </section>
+
+    <section class="progressWrap" aria-label="Year progress">
+      <div class="row">
+        <div class="pct">
+          <span id="percent">0.000000%</span>
+          <small>(of the year completed)</small>
+        </div>
+        <div class="pill" id="range"></div>
+      </div>
+
+      <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="fill" id="fill"></div>
+      </div>
+    </section>
+
+    <div class="footer">
+      <div class="pill" id="now"></div>
+      <div class="pill" id="end"></div>
+    </div>
+  </main>
+
+  <script>
+    // Pads numbers to 2 digits (e.g., 7 -> "07")
+    const pad2 = (n) => String(n).padStart(2, "0");
+
+    // Format date/time in local time, readable but compact
+    const fmt = new Intl.DateTimeFormat(undefined, {
+      year: "numeric", month: "short", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit"
+    });
+
+    const el = {
+      title: document.getElementById("title"),
+      tz: document.getElementById("tz"),
+      days: document.getElementById("days"),
+      hours: document.getElementById("hours"),
+      minutes: document.getElementById("minutes"),
+      seconds: document.getElementById("seconds"),
+      percent: document.getElementById("percent"),
+      fill: document.getElementById("fill"),
+      range: document.getElementById("range"),
+      now: document.getElementById("now"),
+      end: document.getElementById("end"),
+      bar: document.querySelector(".bar")
+    };
+
+    function getYearBounds(now) {
+      const y = now.getFullYear();
+      // Start: Jan 1st 00:00:00.000 local time
+      const start = new Date(y, 0, 1, 0, 0, 0, 0);
+      // End: Jan 1st next year 00:00:00.000 local time
+      const end = new Date(y + 1, 0, 1, 0, 0, 0, 0);
+      return { y, start, end };
+    }
+
+    function update() {
+      const now = new Date();
+      const { y, start, end } = getYearBounds(now);
+
+      el.title.textContent = `Countdown to ${y+1}`;
+      const tzName = Intl.DateTimeFormat().resolvedOptions().timeZone || "Local time";
+      el.tz.textContent = `Timezone: ${tzName}`;
+
+      const totalMs = end - start;
+      const elapsedMs = now - start;
+      const remainingMs = Math.max(0, end - now);
+
+      // Countdown breakdown (days/hours/minutes/seconds)
+      const totalSeconds = Math.floor(remainingMs / 1000);
+      const days = Math.floor(totalSeconds / 86400);
+      const hours = Math.floor((totalSeconds % 86400) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      el.days.textContent = String(days);
+      el.hours.textContent = pad2(hours);
+      el.minutes.textContent = pad2(minutes);
+      el.seconds.textContent = pad2(seconds);
+
+      // Percent complete (high precision + realtime)
+      const pct = Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100));
+      el.percent.textContent = `${pct.toFixed(6)}%`;
+      el.fill.style.width = `${pct}%`;
+      el.bar.setAttribute("aria-valuenow", pct.toFixed(3));
+
+      // Pretty range labels
+      el.range.textContent = `${y}-01-01 → ${y + 1}-01-01`;
+      el.now.textContent = `Now: ${fmt.format(now)}`;
+      el.end.textContent = `End of ${y}: ${fmt.format(new Date(end - 1))}`;
+    }
+
+    // Update smoothly: requestAnimationFrame gives realtime feeling
+    // but we don't need 60fps; 4-10 fps is plenty and saves battery.
+    let last = 0;
+    function loop(ts) {
+      if (ts - last > 120) { // ~8 fps
+        update();
+        last = ts;
+      }
+      requestAnimationFrame(loop);
+    }
+
+    update();
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>

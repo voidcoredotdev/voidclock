@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clock + Progress</title>
+
+<style>
+  :root {
+    --bg: #0f1216;
+    --fg: #f2f4f8;
+    --muted: #a9b0c2;
+    --accent: #6ea8fe;
+  }
+
+  * {
+    box-sizing: border-box;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    overflow: hidden;
+  }
+
+  /* ===== CLOCK ===== */
+  .clock {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  .time {
+    font-size: clamp(4rem, 12vw, 10rem);
+    letter-spacing: 0.08em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .meta {
+    margin-top: 1rem;
+    font-size: 2.2rem;
+    color: var(--muted);
+  }
+
+  /* ===== YEAR WIDGET ===== */
+  .year-widget {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    width: 340px;
+    padding: 12px 14px;
+    background: rgba(15,18,22,0.85);
+    backdrop-filter: blur(6px);
+    border-radius: 10px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+    font-size: 0.85rem;
+  }
+
+  .year-widget .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    white-space: nowrap;
+  }
+
+  .year-widget .label { color: var(--muted); }
+  .year-widget .percent { font-weight: bold; }
+
+  .bar {
+    margin-top: 6px;
+    height: 5px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), #9ec5fe);
+    transition: width 0.3s ease;
+  }
+
+  /* ===== DAY PROGRESS BAR ===== */
+  .day-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: rgba(15,18,22,0.85);
+  }
+
+  .day-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), #9ec5fe);
+    transition: width 0.3s ease;
+  }
+</style>
+</head>
+
+<body>
+
+<!-- YEAR PROGRESS -->
+<div class="year-widget">
+  <div class="row">
+    <div class="label" id="yearRange">2026 → 2027</div>
+    <div class="percent" id="yearday">00 / 365 | 0.000%</div>
+  </div>
+  <div class="bar">
+    <div class="fill" id="yearFill"></div>
+  </div>
+</div>
+
+<!-- CLOCK -->
+<div class="clock">
+  <div class="time" id="time">00:00:00</div>
+  <div class="meta" id="meta">Sunday | Jan 11, 2026</div>
+</div>
+
+<!-- DAY PROGRESS -->
+<div class="day-bar">
+  <div class="day-fill" id="dayFill"></div>
+</div>
+
+<script>
+  const timeEl = document.getElementById("time");
+  const metaEl = document.getElementById("meta");
+  const yearFillEl = document.getElementById("yearFill");
+  const rangeEl = document.getElementById("yearRange");
+  const yeardayEl = document.getElementById("yearday");
+  const dayFillEl = document.getElementById("dayFill");
+
+  const fmtDate = new Intl.DateTimeFormat(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "2-digit"
+  });
+
+  const fmtWeekday = new Intl.DateTimeFormat(undefined, {
+    weekday: "long"
+  });
+
+  function pad(n) {
+    return String(n).padStart(2, "0");
+  }
+
+  function dayOfYear(date) {
+    const start = new Date(date.getFullYear(), 0, 1);
+    return Math.floor((date - start) / 86400000) + 1;
+  }
+
+  function daysInYear(year) {
+    return new Date(year, 1, 29).getMonth() === 1 ? 366 : 365;
+  }
+
+  function update() {
+    const now = new Date();
+
+    /* TIME */
+    timeEl.textContent =
+      `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+    /* META */
+    metaEl.textContent =
+      `${fmtWeekday.format(now)} | ${fmtDate.format(now)}`;
+
+    /* YEAR PROGRESS */
+    const y = now.getFullYear();
+    const start = new Date(y, 0, 1);
+    const end = new Date(y + 1, 0, 1);
+    const pct = ((now - start) / (end - start)) * 100;
+
+    const day = dayOfYear(now);
+    const totalDays = daysInYear(y);
+
+    rangeEl.textContent = `${y} → ${y + 1}`;
+    yeardayEl.textContent =
+      `${day} / ${totalDays} | ${pct.toFixed(3)}%`;
+
+    yearFillEl.style.width = pct + "%";
+
+    /* DAY PROGRESS */
+    const secondsToday =
+      now.getHours() * 3600 +
+      now.getMinutes() * 60 +
+      now.getSeconds();
+
+    const dayPct = (secondsToday / 86400) * 100;
+    dayFillEl.style.width = dayPct + "%";
+  }
+
+  setInterval(update, 250);
+  update();
+</script>
+
+</body>
+</html>

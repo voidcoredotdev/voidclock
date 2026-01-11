@@ -1,0 +1,21 @@
+{
+  "name": "VoidClock",
+  "short_name": "Clock",
+  "start_url": "/pro",
+  "scope": "/pro/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "../images/clock-white.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "../images/clock-white.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

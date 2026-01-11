@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="VoidClock Pro">
+  <link rel="apple-touch-icon" href="/images/clock-white.png">
+  <link rel="icon" type="image/x-icon" href="./clock.ico">
+  <link rel="manifest" href="/manifests/manifest-pro.json">
+  <title>VoidClock Pro™</title>
+
+  <style>
+    :root {
+      color-scheme: light dark;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: monospace;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: var(--bg, #ffffff);
+      color: var(--fg, #000000);
+      user-select: none;
+      transition: background 0.2s, color 0.2s;
+      position: relative;
+    }
+
+    /* ===== THEMES ===== */
+
+    body.light {
+      --bg: #ffffff;
+      --fg: #000000;
+    }
+
+    body.dark {
+      --bg: #0b0b0e;
+      --fg: #e6e6eb;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body.auto {
+        --bg: #0b0b0e;
+        --fg: #e6e6eb;
+      }
+    }
+
+    @media (prefers-color-scheme: light) {
+      body.auto {
+        --bg: #ffffff;
+        --fg: #000000;
+      }
+    }
+
+    /* ===== CLOCK ===== */
+
+    #clock {
+      font-size: 15vw;
+    }
+
+    #date {
+      font-size: 5vw;
+      margin-top: 1vh;
+    }
+
+    #wakelock-hint {
+      font-size: 3.2vw;
+      margin-bottom: 2vh;
+      opacity: 0.75;
+      animation: pulse 1.5s infinite;
+      cursor: pointer;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.6; }
+      50% { opacity: 1; }
+      100% { opacity: 0.6; }
+    }
+
+    /* ===== CONTROLS ===== */
+
+    .controls {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .controls-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .controls-row button,
+    .controls-row select {
+      font-family: monospace;
+      font-size: 1rem;
+      padding: 0.4rem;
+      background: inherit;
+      color: inherit;
+      border: 1px solid currentColor;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .controls-row button {
+      flex: 1 1 50%;
+    }
+
+    .controls-row select {
+      flex: 1 1 100%;
+    }
+
+    @media (max-width: 600px) {
+      .controls {
+        flex-direction: column;
+        align-items: center;
+        position: fixed;
+        bottom: 3rem;
+        right: 0;
+        left: 0;
+        width: 93%;
+        gap: 0.6rem;
+        z-index: 999;
+        padding-left: 0.85rem;
+        padding-right: 1rem;
+      }
+
+      #clock { font-size: 18vw; }
+      #date { font-size: 6vw; }
+      #wakelock-hint { font-size: 4vw; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="wakelock-hint">👋 Tap anywhere to keep screen awake</div>
+
+  <div class="controls">
+    <div class="controls-row">
+      <button id="toggleMode">🌗</button>
+      <button id="toggleFormat">12h/24h</button>
+    </div>
+    <div class="controls-row">
+      <select id="timezoneSelect"></select>
+    </div>
+  </div>
+
+  <div id="clock">--:--:--</div>
+  <div id="date">-- --- ----</div>
+
+<script>
+  const clock = document.getElementById('clock');
+  const date = document.getElementById('date');
+  const toggleMode = document.getElementById('toggleMode');
+  const toggleFormat = document.getElementById('toggleFormat');
+  const timezoneSelect = document.getElementById('timezoneSelect');
+  const wakelockHint = document.getElementById('wakelock-hint');
+
+  /* ===== THEME ===== */
+
+  const applyTheme = () => {
+    const theme = localStorage.getItem('voidTheme') || 'auto';
+    document.body.classList.remove('light', 'dark', 'auto');
+    document.body.classList.add(theme);
+
+    toggleMode.textContent =
+      theme === 'auto' ? '🌗 auto' :
+      theme === 'dark' ? '🌑' :
+      '☀️';
+  };
+
+  toggleMode.onclick = () => {
+    const current = localStorage.getItem('voidTheme') || 'auto';
+    const next =
+      current === 'auto' ? 'dark' :
+      current === 'dark' ? 'light' :
+      'auto';
+
+    localStorage.setItem('voidTheme', next);
+    applyTheme();
+  };
+
+  window.matchMedia('(prefers-color-scheme: dark)')
+    .addEventListener('change', () => {
+      if ((localStorage.getItem('voidTheme') || 'auto') === 'auto') {
+        applyTheme();
+      }
+    });
+
+  /* ===== CLOCK ===== */
+
+  const formatOptions = { hour: 'numeric', minute: 'numeric', second: 'numeric' };
+
+  const update = () => {
+    const tz = localStorage.getItem('voidTZ') ||
+      Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    const is24h = localStorage.getItem('void24h') === 'true';
+    formatOptions.hour12 = !is24h;
+
+    const now = new Date();
+    let time = new Intl.DateTimeFormat('en-US', {
+      ...formatOptions,
+      timeZone: tz
+    }).format(now).replace(/\s?(AM|PM)/i, '');
+
+    const dateStr = new Intl.DateTimeFormat('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      timeZone: tz
+    }).format(now);
+
+    const shortTZ = tz.split('/').pop().replace('_', ' ');
+    clock.textContent = time;
+    date.textContent = `${shortTZ} | ${dateStr}`;
+  };
+
+  toggleFormat.onclick = () => {
+    const newVal = !(localStorage.getItem('void24h') === 'true');
+    localStorage.setItem('void24h', newVal);
+  };
+
+  const populateTimezones = () => {
+    for (const tz of Intl.supportedValuesOf('timeZone')) {
+      const opt = document.createElement('option');
+      opt.value = tz;
+      opt.textContent = tz;
+      timezoneSelect.appendChild(opt);
+    }
+    timezoneSelect.value =
+      localStorage.getItem('voidTZ') ||
+      Intl.DateTimeFormat().resolvedOptions().timeZone;
+  };
+
+  timezoneSelect.onchange = () => {
+    localStorage.setItem('voidTZ', timezoneSelect.value);
+  };
+
+  /* ===== WAKE LOCK ===== */
+
+  let wakeLock = null;
+
+  async function requestWakeLock() {
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+    } catch {}
+  }
+
+  document.body.addEventListener('click', async () => {
+    wakelockHint.style.display = 'none';
+    if ('wakeLock' in navigator && wakeLock === null) {
+      await requestWakeLock();
+    }
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (wakeLock !== null && document.visibilityState === 'visible') {
+      requestWakeLock();
+    }
+  });
+
+  if (!('wakeLock' in navigator)) {
+    wakelockHint.textContent = 'Wake Lock not supported on this device 🙃';
+  }
+
+  /* INIT */
+  applyTheme();
+  populateTimezones();
+  update();
+  setInterval(update, 1000);
+</script>
+</body>
+</html>
