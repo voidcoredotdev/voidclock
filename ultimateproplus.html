@@ -102,6 +102,48 @@
     background: linear-gradient(90deg, var(--accent), #9ec5fe);
     transition: width 0.3s ease;
   }
+
+  @media (max-width: 640px) {
+    body {
+      overflow: hidden;
+    }
+
+    .clock {
+      padding: 14vh 16px 10vh;
+    }
+
+    .time {
+      font-size: clamp(2.8rem, 18vw, 5.2rem);
+      letter-spacing: 0.04em;
+    }
+
+    .meta {
+      margin-top: 0.65rem;
+      font-size: 1.1rem;
+      text-align: center;
+    }
+
+    .year-widget {
+      position: fixed;
+      top: auto;
+      left: 12px;
+      right: 12px;
+      bottom: 20px;
+      width: auto;
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-size: 0.95rem;
+    }
+
+    .bar {
+      height: 6px;
+      margin-top: 8px;
+    }
+
+    .day-bar {
+      height: 4px;
+    }
+  }
 </style>
 </head>
 
