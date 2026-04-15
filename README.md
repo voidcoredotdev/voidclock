@@ -88,7 +88,7 @@ It is suitable for:
 
 All clock variants can be downloaded as a static offline bundle:
 
-👉 **https://cdn.voidcore.dev/voidclock.zip**
+👉 **https://cdn.voidcore.dev/apps/voidclock.zip**
 
 Unzip it and open the files directly — no build step required.
 
